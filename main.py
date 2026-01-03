@@ -1,4 +1,7 @@
 from utils import * # import everything from the utils folder
+import cv2
+import numpy as np
+import tensorflow as tf
 
 WIN = pygame.display.set_mode((WIDTH,HEIGHT)) # defining a window to draw on
 pygame.display.set_caption("Drawing Program") # setting the header of the window
@@ -44,16 +47,31 @@ def get_row_col_from_pos(pos):
 
     return row, col
 
+def submit_drawing():
+    pygame.image.save(WIN, "digit.png")
+    img = cv2.imread(f"digit.png")[:,:,0] # no shape, no colour, just pixels
+    img = cv2.bitwise_not(img) # invert, black on white now but needs white on black
+    img = img[0:HEIGHT-TOOLBAR_HEIGHT,0:WIDTH]
+    img = cv2.resize(img, (28,28), interpolation = cv2.INTER_AREA)
+    cv2.imwrite("changed.png",img)
+    img = img.reshape(1,28,28) # need to add batch dimension
+    print(img.shape)
+    pred = np.argmax(model.predict(img))
+    print(pred)
+
 run = True
 clock = pygame.time.Clock()
 grid = init_grid(ROWS,COLS,BG_COLOUR)
 drawing_colour = BLACK
+model  = tf.keras.models.load_model('digit_model.keras')
+predict_text = f'That number is {pred}'
 
 button_y = HEIGHT - TOOLBAR_HEIGHT/2 - 25
 buttons = [
     Button(10, button_y, 50, 50, BLACK),
     Button(70, button_y, 50, 50, BLUE),
     Button(130, button_y, 50, 50, WHITE, "Clear", BLACK),
+    Button(190, button_y, 50, 50, WHITE, "Submit", BLACK),
 ]
 
 ## EVENT LOOP: continually runs until program ends, listening for events
@@ -80,6 +98,8 @@ while run:
                     if button.text == "Clear":
                         grid = init_grid(ROWS,COLS,BG_COLOUR)
                         drawing_colour = BLACK
+                    if button.text == "Submit":
+                        submit_drawing()
 
     draw(WIN,grid,buttons)
 
