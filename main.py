@@ -64,7 +64,6 @@ clock = pygame.time.Clock()
 grid = init_grid(ROWS,COLS,BG_COLOUR)
 drawing_colour = BLACK
 model  = tf.keras.models.load_model('digit_model.keras')
-predict_text = f'That number is {pred}'
 
 button_y = HEIGHT - TOOLBAR_HEIGHT/2 - 25
 buttons = [
@@ -100,6 +99,7 @@ while run:
                         drawing_colour = BLACK
                     if button.text == "Submit":
                         submit_drawing()
+                        drawing_colour = BLACK
 
     draw(WIN,grid,buttons)
 
